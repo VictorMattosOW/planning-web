@@ -1,9 +1,14 @@
-import { ReactNode, createContext } from 'react'
+import { ReactNode, createContext, useState } from 'react'
+
+export interface Task {
+  title: string
+  finished: boolean
+}
 
 export interface DayPlanning {
   dayOfWeek: string
   selected: boolean
-  tasks: string[]
+  tasks: Task[]
 }
 
 const daysOfWeek: DayPlanning[] = [
@@ -49,7 +54,9 @@ interface PlanningContextProvidersProps {
 }
 
 interface PlanningContextType {
-  daysOfWeek: DayPlanning[]
+  tasks: DayPlanning[]
+  handleCheckbox: (index: number) => void
+  handleAddTask: (task: Task) => void
 }
 
 export const PlanningContext = createContext({} as PlanningContextType)
@@ -57,10 +64,43 @@ export const PlanningContext = createContext({} as PlanningContextType)
 export function PlanningContextProvider({
   children,
 }: PlanningContextProvidersProps) {
+  const [tasks, setTasks] = useState<DayPlanning[]>(daysOfWeek)
+
+  function handleCheckbox(index: number) {
+    const updatedTasks = tasks.map((item, i) =>
+      i === index ? { ...item, selected: !item.selected } : item,
+    )
+
+    setTasks(updatedTasks)
+  }
+
+  function handleAddTask({ title, finished }: Task) {
+    const taskWeekUpdated: DayPlanning[] = tasks.map((item) => {
+      if (item.selected) {
+        return {
+          ...item,
+          selected: false,
+          tasks: [
+            ...item.tasks,
+            {
+              title,
+              finished,
+            },
+          ],
+        }
+      }
+      return item
+    })
+
+    setTasks(taskWeekUpdated)
+  }
+
   return (
     <PlanningContext.Provider
       value={{
-        daysOfWeek,
+        handleCheckbox,
+        handleAddTask,
+        tasks,
       }}
     >
       {children}

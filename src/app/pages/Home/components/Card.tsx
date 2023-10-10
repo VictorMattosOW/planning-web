@@ -2,9 +2,10 @@
 import React, { useState } from 'react'
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { CheckIcon, Cross1Icon } from '@radix-ui/react-icons'
+import { Task } from '@/app/context/PlanningContext'
 
-export function Card() {
-  const [checked, setChecked] = useState(true)
+export function Card({ title, finished }: Task) {
+  const [checked, setChecked] = useState(finished)
 
   function handleChecked(checked: boolean) {
     setChecked(checked)
@@ -38,7 +39,7 @@ export function Card() {
           </Checkbox.Indicator>
         </Checkbox.Root>
         <div>
-          <h1 className="font-bold">Conta Justa</h1>
+          <h1 className="font-bold">{title}</h1>
           <p className={`text-xs ${checked ? 'text-black' : 'text-white'}`}>
             02h00
           </p>

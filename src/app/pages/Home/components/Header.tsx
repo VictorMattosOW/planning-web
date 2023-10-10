@@ -2,11 +2,8 @@ import { useForm } from 'react-hook-form'
 import { Dropdown } from './Dropdown'
 import * as zod from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { DayPlanning } from '@/app/context/PlanningContext'
-
-interface HeaderProps {
-  daysOfWeek: DayPlanning[]
-}
+import { PlanningContext, Task } from '@/app/context/PlanningContext'
+import { useContext } from 'react'
 
 const createNewTaskValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -15,7 +12,8 @@ const createNewTaskValidationSchema = zod.object({
 
 type newTaskFormData = zod.infer<typeof createNewTaskValidationSchema>
 
-export function Header({ daysOfWeek }: HeaderProps) {
+export function Header() {
+  const { handleCheckbox, tasks, handleAddTask } = useContext(PlanningContext)
   const { register, handleSubmit, watch, reset } = useForm<newTaskFormData>({
     resolver: zodResolver(createNewTaskValidationSchema),
     defaultValues: {
@@ -25,8 +23,12 @@ export function Header({ daysOfWeek }: HeaderProps) {
   })
 
   function handleCreateNewTask(data: newTaskFormData) {
-    console.log(data)
+    const taskToAdd: Task = {
+      title: data.task,
+      finished: false,
+    }
     reset()
+    handleAddTask(taskToAdd)
   }
 
   const task = watch('task')
@@ -50,7 +52,7 @@ export function Header({ daysOfWeek }: HeaderProps) {
             Qual o plano?
           </label>
         </div>
-        <Dropdown daysOfWeek={daysOfWeek} />
+        <Dropdown daysOfWeek={tasks} handleCheckbox={handleCheckbox} />
         <div className="relative">
           <input
             className="block h-[42px] w-[190px] px-2 text-sm text-[#F2F2F2] bg-transparent border-2 border-[#00B695] focus:outline-none rounded-md"
