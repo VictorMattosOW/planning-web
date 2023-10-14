@@ -22,7 +22,9 @@ export function Card({ title, finished }: Task) {
           checked ? 'text-black' : 'text-white'
         }`}
       >
-        <Cross1Icon />
+        <button>
+          <Cross1Icon />
+        </button>
       </div>
       <div className="flex gap-2 items-start px-2 pb-2">
         <Checkbox.Root
