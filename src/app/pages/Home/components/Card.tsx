@@ -4,16 +4,29 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import { CheckIcon, Cross1Icon } from '@radix-ui/react-icons'
 import { Task } from '@/app/context/PlanningContext'
 
-export function Card({ title, finished }: Task) {
-  const [checked, setChecked] = useState(finished)
+interface CardProps {
+  task: Task
+  dayOfWeek: string
+  handleDeleteTask: (id: string, day: string) => void
+  handleFinishedTask: (id: string, checked: boolean, day: string) => void
+}
+
+export function Card({
+  task,
+  handleDeleteTask,
+  dayOfWeek,
+  handleFinishedTask,
+}: CardProps) {
+  const [checked, setChecked] = useState(task.finished)
 
   function handleChecked(checked: boolean) {
     setChecked(checked)
+    handleFinishedTask(task.id, checked, dayOfWeek)
   }
 
   return (
     <div
-      className={`w-44 min-h-[70px] p-2 rounded-lg ${
+      className={`w-full min-h-[80px] p-2 mt-2 rounded-lg ${
         checked ? 'bg-[#00B695]' : 'bg-[#434854]'
       }`}
     >
@@ -22,7 +35,7 @@ export function Card({ title, finished }: Task) {
           checked ? 'text-black' : 'text-white'
         }`}
       >
-        <button>
+        <button onClick={() => handleDeleteTask(task.id, dayOfWeek)}>
           <Cross1Icon />
         </button>
       </div>
@@ -41,10 +54,11 @@ export function Card({ title, finished }: Task) {
           </Checkbox.Indicator>
         </Checkbox.Root>
         <div>
-          <h1 className="font-bold">{title}</h1>
-          <p className={`text-xs ${checked ? 'text-black' : 'text-white'}`}>
+          <h1 className="font-bold">{task.title}</h1>
+          {/* TODO: criar timer para tasks */}
+          {/* <p className={`text-xs ${checked ? 'text-black' : 'text-white'}`}>
             02h00
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

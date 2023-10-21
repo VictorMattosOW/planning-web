@@ -13,7 +13,8 @@ const createNewTaskValidationSchema = zod.object({
 type newTaskFormData = zod.infer<typeof createNewTaskValidationSchema>
 
 export function Header() {
-  const { handleCheckbox, tasks, handleAddTask } = useContext(PlanningContext)
+  const { handleCheckbox, dailyTasks, handleAddTask } =
+    useContext(PlanningContext)
   const { register, handleSubmit, watch, reset } = useForm<newTaskFormData>({
     resolver: zodResolver(createNewTaskValidationSchema),
     defaultValues: {
@@ -23,9 +24,11 @@ export function Header() {
   })
 
   function handleCreateNewTask(data: newTaskFormData) {
+    console.log(data.task)
     const taskToAdd: Task = {
       title: data.task,
       finished: false,
+      id: '',
     }
     reset()
     handleAddTask(taskToAdd)
@@ -52,7 +55,7 @@ export function Header() {
             Qual o plano?
           </label>
         </div>
-        <Dropdown daysOfWeek={tasks} handleCheckbox={handleCheckbox} />
+        <Dropdown daysOfWeek={dailyTasks} handleCheckbox={handleCheckbox} />
         <div className="relative">
           <input
             className="block h-[42px] w-[190px] px-2 text-sm text-[#F2F2F2] bg-transparent border-2 border-[#00B695] focus:outline-none rounded-md"

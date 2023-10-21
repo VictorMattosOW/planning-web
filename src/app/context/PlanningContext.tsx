@@ -3,6 +3,7 @@ import { ReactNode, createContext, useState } from 'react'
 export interface Task {
   title: string
   finished: boolean
+  id: string
 }
 
 export interface DayPlanning {
@@ -54,9 +55,11 @@ interface PlanningContextProvidersProps {
 }
 
 interface PlanningContextType {
-  tasks: DayPlanning[]
+  dailyTasks: DayPlanning[]
   handleCheckbox: (index: number) => void
   handleAddTask: (task: Task) => void
+  handleDeleteTask: (id: string, day: string) => void
+  handleFinishedTask: (id: string, checked: boolean, day: string) => void
 }
 
 export const PlanningContext = createContext({} as PlanningContextType)
@@ -64,18 +67,18 @@ export const PlanningContext = createContext({} as PlanningContextType)
 export function PlanningContextProvider({
   children,
 }: PlanningContextProvidersProps) {
-  const [tasks, setTasks] = useState<DayPlanning[]>(daysOfWeek)
+  const [dailyTasks, setDailyTasks] = useState<DayPlanning[]>(daysOfWeek)
 
   function handleCheckbox(index: number) {
-    const updatedTasks = tasks.map((item, i) =>
+    const updatedTasks = dailyTasks.map((item, i) =>
       i === index ? { ...item, selected: !item.selected } : item,
     )
 
-    setTasks(updatedTasks)
+    setDailyTasks(updatedTasks)
   }
 
-  function handleAddTask({ title, finished }: Task) {
-    const taskWeekUpdated: DayPlanning[] = tasks.map((item) => {
+  function handleAddTask({ title, finished, id }: Task) {
+    const taskWeekUpdated: DayPlanning[] = dailyTasks.map((item) => {
       if (item.selected) {
         return {
           ...item,
@@ -85,6 +88,7 @@ export function PlanningContextProvider({
             {
               title,
               finished,
+              id: crypto.randomUUID(),
             },
           ],
         }
@@ -92,15 +96,52 @@ export function PlanningContextProvider({
       return item
     })
 
-    setTasks(taskWeekUpdated)
+    setDailyTasks(taskWeekUpdated)
   }
 
+  function handleDeleteTask(id: string, day: string) {
+    const deletedTask = dailyTasks.map((item) => {
+      if (item.dayOfWeek === day) {
+        const deleted = item.tasks.filter((t) => t.id !== id)
+        return {
+          ...item,
+          tasks: [...deleted],
+        }
+      }
+      return item
+    })
+    setDailyTasks(deletedTask)
+  }
+
+  function handleFinishedTask(id: string, checked: boolean, day: string) {
+    const finishedTask = dailyTasks.map((item) => {
+      if (item.dayOfWeek === day) {
+        const finishedTask = item.tasks.map((task) => {
+          if (task.id === id) {
+            return {
+              ...task,
+              finished: checked,
+            }
+          }
+          return task
+        })
+        return {
+          ...item,
+          tasks: [...finishedTask],
+        }
+      }
+      return item
+    })
+    setDailyTasks(finishedTask)
+  }
   return (
     <PlanningContext.Provider
       value={{
+        dailyTasks,
         handleCheckbox,
         handleAddTask,
-        tasks,
+        handleDeleteTask,
+        handleFinishedTask,
       }}
     >
       {children}
