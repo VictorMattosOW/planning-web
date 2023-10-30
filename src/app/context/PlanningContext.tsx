@@ -1,4 +1,11 @@
-import { ReactNode, createContext, useState } from 'react'
+import { ReactNode, createContext, useReducer, useState } from 'react'
+import { planningReducer } from '../reducers/reducer'
+import {
+  addNewTaskAction,
+  changeSelectedState,
+  deleteTaskAction,
+  finishedTaskAction,
+} from '../reducers/actions'
 
 export interface Task {
   title: string
@@ -67,73 +74,26 @@ export const PlanningContext = createContext({} as PlanningContextType)
 export function PlanningContextProvider({
   children,
 }: PlanningContextProvidersProps) {
-  const [dailyTasks, setDailyTasks] = useState<DayPlanning[]>(daysOfWeek)
+  // TODO: guardar as tasks no localStorage e fazer a verificação do dia.
+  const [planningState, dispatch] = useReducer(planningReducer, { daysOfWeek })
+  const { daysOfWeek: dailyTasks } = planningState
 
   function handleCheckbox(index: number) {
-    const updatedTasks = dailyTasks.map((item, i) =>
-      i === index ? { ...item, selected: !item.selected } : item,
-    )
-
-    setDailyTasks(updatedTasks)
+    dispatch(changeSelectedState(index))
   }
 
-  function handleAddTask({ title, finished, id }: Task) {
-    const taskWeekUpdated: DayPlanning[] = dailyTasks.map((item) => {
-      if (item.selected) {
-        return {
-          ...item,
-          selected: false,
-          tasks: [
-            ...item.tasks,
-            {
-              title,
-              finished,
-              id: crypto.randomUUID(),
-            },
-          ],
-        }
-      }
-      return item
-    })
-
-    setDailyTasks(taskWeekUpdated)
+  function handleAddTask(newTask: Task) {
+    dispatch(addNewTaskAction(newTask))
   }
 
   function handleDeleteTask(id: string, day: string) {
-    const deletedTask = dailyTasks.map((item) => {
-      if (item.dayOfWeek === day) {
-        const deleted = item.tasks.filter((t) => t.id !== id)
-        return {
-          ...item,
-          tasks: [...deleted],
-        }
-      }
-      return item
-    })
-    setDailyTasks(deletedTask)
+    dispatch(deleteTaskAction(id, day))
   }
 
   function handleFinishedTask(id: string, checked: boolean, day: string) {
-    const finishedTask = dailyTasks.map((item) => {
-      if (item.dayOfWeek === day) {
-        const finishedTask = item.tasks.map((task) => {
-          if (task.id === id) {
-            return {
-              ...task,
-              finished: checked,
-            }
-          }
-          return task
-        })
-        return {
-          ...item,
-          tasks: [...finishedTask],
-        }
-      }
-      return item
-    })
-    setDailyTasks(finishedTask)
+    dispatch(finishedTaskAction(id, checked, day))
   }
+
   return (
     <PlanningContext.Provider
       value={{
